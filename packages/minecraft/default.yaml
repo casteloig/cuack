@@ -1,0 +1,8 @@
+name: minecraft
+image: casteloig/mine-server:latest
+specs:
+  - digitalocean:
+    - world-name: world
+    - players: 20
+    - difficulty: easy
+    - online-mode: true
