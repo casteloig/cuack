@@ -1,8 +1,27 @@
-name: minecraft
-image: casteloig/mine-server:latest
-specs:
-  - digitalocean:
-    - world-name: world
-    - players: 20
-    - difficulty: easy
-    - online-mode: true
+- server: # dont miss the '-' tho it's only one sv
+    name: minecraft
+    provider:
+      name-prov: digitalocean
+      ssh-name: msi-laptop-linux
+      cpu: 2
+      ram: 2GB
+    game:
+      name-game: minecraft
+      image: minecraft-default #could be replaced with another docker image with same files as this
+      world-name: world # not used yet
+      players: 5
+      difficulty: easy
+
+# - server:
+#     name: minecraft-two
+#     provider:
+#       name-prov: digitalocean
+#       ssh-name: msi-laptop-linux
+#       cpu: 2
+#       ram: 2GB
+#     game:
+#       name-game: minecraft
+#       image: minecraft-default
+#       world-name: world
+#       players: 10
+#       difficulty: medium

@@ -17,7 +17,7 @@ USER minecraft
 
 WORKDIR /home/minecraft
 
-RUN wget https://launcher.mojang.com/v1/objects/35139deedbd5182953cf1caa23835da59ca3d7cd/server.jar
+RUN wget https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf20226194497dc2/server.jar
 COPY eula.txt .
 COPY server.properties .
 COPY start.sh .
