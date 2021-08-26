@@ -57,7 +57,7 @@ var initCmd = &cobra.Command{
 		auxRegion = strings.Trim(auxRegion, "\n")
 		if auxRegion != "" {
 			regionSlug, err := selectRegion(regions, auxRegion)
-			if regionSlug != "" && err != nil {
+			if regionSlug != "" && err == nil {
 				regionPref = auxRegion
 			} else {
 				fmt.Println(err)
