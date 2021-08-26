@@ -67,7 +67,7 @@ var createCmd = &cobra.Command{
 			ram := sv.Sv.Provider.Ram
 			slugDroplet = slugDroplet + strconv.Itoa(cpu) + "vcpu-" + strings.ToLower(ram)
 
-			fmt.Println("Server number " + strconv.Itoa(index))
+			fmt.Println("Server number " + strconv.Itoa(index+1))
 			// So far every server provider must be "digitalocean"
 			if sv.Sv.NameProv == "digitalocean" {
 				fmt.Println("Checking if it can be created")

@@ -50,7 +50,7 @@ var initCmd = &cobra.Command{
 
 		regions := listRegions(client, ctx)
 
-		regionPref := "London 1"
+		regionPref := "lon1"
 		fmt.Println("Enter the prefered region slug (default lon1)")
 
 		auxRegion, _ := reader.ReadString('\n')

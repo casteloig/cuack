@@ -2,7 +2,7 @@
     name: minecraft
     provider:
       name-prov: digitalocean
-      ssh-name: msi-laptop-linux
+      ssh-name: asus-laptop-linux # 
       cpu: 2
       ram: 2GB
     game:
