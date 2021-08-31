@@ -1,27 +1,71 @@
-- server: # dont miss the '-' tho it's only one sv
-    name: minecraft
-    provider:
-      name-prov: digitalocean
-      ssh-name: asus-laptop-linux # 
-      cpu: 2
-      ram: 2GB
-    game:
-      name-game: minecraft
-      image: minecraft-default #could be replaced with another docker image with same files as this
-      world-name: world # not used yet
-      players: 5
-      difficulty: easy
+name: minecraft
+image: casteloig/mine-server:latest
+provider:
+  name-prov: digitalocean
+  ssh-name: asus-laptop-linux #
+  cpu: 2
+  ram: 2GB
+params:
+  ports:
+    - 25565
+    - 25575
+  world-name: world # not used yet
+  players: 5
+  difficulty: easy
 
-# - server:
-#     name: minecraft-two
-#     provider:
-#       name-prov: digitalocean
-#       ssh-name: msi-laptop-linux
-#       cpu: 2
-#       ram: 2GB
-#     game:
-#       name-game: minecraft
-#       image: minecraft-default
-#       world-name: world
-#       players: 10
-#       difficulty: medium
+
+# name: minecraft
+# image: casteloig/minecraft:latest
+# provider:
+#   name-prov: digitalocean
+#   ssh-name: asus-laptop-linux #
+#   cpu: 2
+#   ram: 2GB
+# ports: 
+#   - 25565
+#   - 25575
+# params:
+#   world-name: world # not used yet
+#   players: 5
+#   difficulty: easy
+
+
+
+
+
+
+
+
+
+
+# name: minecraft
+# image: minecraft:13.4 
+# provider:
+# name-prov: digitalocean
+# ssh-name: asus-laptop-linux # 
+# cpu: 2
+# ram: 2GB
+# params:
+# image: minecraft-default #could be replaced with another docker image with same files as this
+# world-name: world # not used yet
+# players: 5
+# difficulty: easy
+# ---
+# name: minecraft-big
+# provider:
+# name-prov: digitalocean
+# ssh-name: asus-laptop-linux # 
+# cpu: 5
+# ram: 16GB
+# params:
+# image: minecraft-default #could be replaced with another docker image with same files as this
+# world-name: world # not used yet
+# players: 100
+# difficulty: easy
+
+
+
+# cuack apply minecraft 
+# cuack apply minecraft-big
+
+# cuack apply micraft -f minecraft.yaml

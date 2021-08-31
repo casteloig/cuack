@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 Ignacio Castelo <casteloig@outlook.es>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Set the basic config",
-	Long: `Set the key token of Digital Ocean and asks for the preffered region.
+	Long: `Set the key token of DigitalOcean and asks for the preffered region.
 	
-	This step is needed for creating a server`,
+	This step is needed for creating any server`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("init called")
 
@@ -48,7 +48,10 @@ var initCmd = &cobra.Command{
 		client := godo.NewFromToken(tokenDO)
 		ctx := context.TODO()
 
-		regions := listRegions(client, ctx)
+		regions, err := listRegions(client, ctx)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		regionPref := "lon1"
 		fmt.Println("Enter the prefered region slug (default lon1)")
@@ -64,7 +67,10 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		createInitFile(tokenDO, regionPref)
+		err = createInitFile(tokenDO, regionPref)
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 
@@ -83,23 +89,27 @@ func init() {
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func createInitFile(key string, region string) {
+func createInitFile(key string, region string) error {
 	home, _ := os.UserHomeDir()
 	dir := home + "/.config/cuack.config"
 
 	err := ioutil.WriteFile(dir, []byte("key "+key+"\n"+"region "+region), 0755)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+	return nil
 }
 
-func listRegions(client *godo.Client, ctx context.Context) []godo.Region {
-	regions, _ := do.GetAvailableRegions(client, ctx)
+func listRegions(client *godo.Client, ctx context.Context) ([]godo.Region, error) {
+	regions, err := do.GetAvailableRegions(client, ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, region := range regions {
 		fmt.Println(region.Slug + " (" + region.Name + ")")
 	}
-	return regions
+	return regions, nil
 }
 
 func selectRegion(regions []godo.Region, slug string) (string, error) {

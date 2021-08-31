@@ -13,6 +13,9 @@ RUN adduser minecraft sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN usermod -aG sudo minecraft
 
+RUN mkdir -p /cuackDocker
+RUN chown -R minecraft /cuackDocker
+
 USER minecraft
 
 WORKDIR /home/minecraft
@@ -25,5 +28,6 @@ COPY start.sh .
 RUN sudo chmod +x start.sh
 
 EXPOSE 25565
+EXPOSE 25575
 
 CMD ["./start.sh"]

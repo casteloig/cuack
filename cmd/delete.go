@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 Ignacio Castelo <casteloig@outlook.es>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,21 +30,24 @@ var name string
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Deletes a droplet",
+	Long:  `Deletes a droplet taking as a flag the name of the droplet`,
 	Run: func(cmd *cobra.Command, args []string) {
-		do.GetTokenFromFile()
+
+		err := do.GetTokenFromFile()
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		client := godo.NewFromToken(do.Token)
 		ctx := context.TODO()
 
 		serverName, _ := cmd.Flags().GetString("name")
 		fmt.Println("Deleting " + serverName)
-		do.DeleteDropletByName(client, ctx, serverName)
+		err = do.DeleteDropletByName(client, ctx, serverName)
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 

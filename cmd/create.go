@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 Ignacio Castelo <casteloig@outlook.es>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	do "cuack/digitalocean"
-	mine "cuack/minecraft"
 
 	"github.com/digitalocean/godo"
 	"github.com/spf13/cobra"
@@ -39,59 +38,60 @@ var createCmd = &cobra.Command{
 	Long: `Creates a droplet with docker installed.
 	
 	Then it takes the yaml file as an argument and deploys inside the droplet a 
-	running server.
-	
-	It can create and deploy more than one server. Check the templates and default packages`,
+	running server.`,
+
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("create called")
 
-		do.GetRegionFromFile()
-		do.GetTokenFromFile()
-
-		fmt.Println(do.Token)
-		fmt.Println(do.Region)
+		err := do.GetRegionFromFile()
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = do.GetTokenFromFile()
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		file, _ := cmd.Flags().GetString("file")
 		fmt.Println(file)
 		if file != "" {
-			yamlToStruct(file)
+			err := yamlToStruct(file)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 
 		client := godo.NewFromToken(do.Token)
 		ctx := context.TODO()
 
-		// Iterate over all servers specified in the yaml file
-		for index, sv := range do.Servers {
-			slugDroplet := "s-"
-			cpu := sv.Sv.Provider.Cpu
-			ram := sv.Sv.Provider.Ram
-			slugDroplet = slugDroplet + strconv.Itoa(cpu) + "vcpu-" + strings.ToLower(ram)
+		slugDroplet := "s-"
+		cpu := do.Servers.Cpu
+		ram := do.Servers.Ram
+		slugDroplet = slugDroplet + strconv.Itoa(cpu) + "vcpu-" + strings.ToLower(ram)
 
-			fmt.Println("Server number " + strconv.Itoa(index+1))
-			// So far every server provider must be "digitalocean"
-			if sv.Sv.NameProv == "digitalocean" {
-				fmt.Println("Checking if it can be created")
-				exists, err := do.CheckDropletExists(client, ctx, sv.Sv.Name)
+		// So far every server provider must be "digitalocean"
+		if do.Servers.Provider.NameProv == "digitalocean" {
+			fmt.Println("Checking if it can be created")
+			exists, err := do.CheckDropletExists(client, ctx, do.Servers.Name)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// If not reached max number of droplets and the droplet with that name does not exists yet...
+			if !exists && (do.GetMaxDroplets(client, ctx)-do.GetNumberDroplets(client, ctx) >= 1) {
+				// Create droplet
+				fmt.Println("Creating droplet ...")
+				_, err := do.CreateDropletWithSSH(client, ctx, do.Servers.Name, do.Region, slugDroplet, do.Servers.Provider.SshName)
 				if err != nil {
 					fmt.Println(err)
 				}
-				// If not reached max number of droplets and the droplet with that name does not exists yet...
-				if !exists && (do.GetMaxDroplets(client, ctx)-do.GetNumberDroplets(client, ctx) >= 1) {
-					// Create droplet
-					fmt.Println("Creating droplet ...")
-					_, err := do.CreateDropletWithSSH(client, ctx, sv.Sv.Name, do.Region, slugDroplet, sv.Sv.Provider.SshName, sv.Sv.NameGame)
-					if err != nil {
-						fmt.Println(err)
-					}
-					// Create request = MINECRAFT
-					if strings.ToLower(sv.Sv.NameGame) == "minecraft" {
-						fmt.Println("Creating minecraft server")
-						mine.CreateServer(client, ctx, sv)
-					}
+
+				// Create server inside the droplet
+				fmt.Println("Creating server ...")
+				err = do.CreateServer(client, ctx)
+				if err != nil {
+					fmt.Println(err)
 				}
-
 			}
-
 		}
 
 	},
@@ -119,18 +119,6 @@ func yamlToStruct(file string) error {
 		return err
 	}
 	yaml.Unmarshal(fileContent, &do.Servers)
-	fmt.Println(do.Servers)
+
 	return nil
-}
-
-func GetServers() []do.ServerGeneral {
-	return do.Servers
-}
-
-func GetToken() string {
-	return do.Token
-}
-
-func GetRegion() string {
-	return do.Region
 }

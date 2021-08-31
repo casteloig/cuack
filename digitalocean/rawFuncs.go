@@ -49,7 +49,7 @@ func rawListDroplets(client *godo.Client, ctx context.Context) ([]godo.Droplet, 
 // Creates a new Droplet and returns an object *godo.Droplet. It also binds an ssh key (based on the ID, not the name)
 //	to the droplet, so you can connect to it via ssh.
 // It returns an error if request is not done correctly.
-func rawCreateDropletWithSSH(client *godo.Client, ctx context.Context, name string, region string, size string, ssh int, game string) (*godo.Droplet, error) {
+func rawCreateDropletWithSSH(client *godo.Client, ctx context.Context, name string, region string, size string, ssh int) (*godo.Droplet, error) {
 	request := &godo.DropletCreateRequest{
 		Name:   name,
 		Region: region,
@@ -60,7 +60,7 @@ func rawCreateDropletWithSSH(client *godo.Client, ctx context.Context, name stri
 		SSHKeys: []godo.DropletCreateSSHKey{
 			{ID: ssh},
 		},
-		Tags: []string{"cuack", game},
+		Tags: []string{"cuack"},
 	}
 
 	droplet, _, err := client.Droplets.Create(ctx, request)
@@ -72,7 +72,7 @@ func rawCreateDropletWithSSH(client *godo.Client, ctx context.Context, name stri
 
 // Creates a new Droplet and returns an object *godo.Droplet.
 // It returns an error if request is not done correctly.
-func rawCreateDroplet(client *godo.Client, ctx context.Context, name string, region string, size string, game string) (*godo.Droplet, error) {
+func rawCreateDroplet(client *godo.Client, ctx context.Context, name string, region string, size string) (*godo.Droplet, error) {
 	request := &godo.DropletCreateRequest{
 		Name:   name,
 		Region: region,
@@ -80,7 +80,7 @@ func rawCreateDroplet(client *godo.Client, ctx context.Context, name string, reg
 		Image: godo.DropletCreateImage{
 			Slug: "docker-20-04",
 		},
-		Tags: []string{"cuack", game},
+		Tags: []string{"cuack"},
 	}
 
 	droplet, _, err := client.Droplets.Create(ctx, request)

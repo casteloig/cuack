@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 Ignacio Castelo <casteloig@outlook.es>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +36,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		do.GetTokenFromFile()
+
+		err := do.GetTokenFromFile()
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		client := godo.NewFromToken(do.Token)
 		ctx := context.TODO()
 
@@ -45,8 +50,8 @@ to quickly create a Cobra application.`,
 			fmt.Println(err)
 		}
 
-		for ip, elements := range list {
-			fmt.Println("Game: " + elements[1] + ", Name: " + elements[0] + ", IPv4: " + ip)
+		for ip, name := range list {
+			fmt.Println("Name: " + name + ", IPv4: " + ip)
 		}
 	},
 }

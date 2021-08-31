@@ -144,6 +144,7 @@ func DeleteDropletByName(client *godo.Client, ctx context.Context, name string) 
 			if err != nil {
 				return err
 			}
+			return nil
 		}
 	}
 	return errors.New("droplet does not exist with that name")
@@ -152,7 +153,7 @@ func DeleteDropletByName(client *godo.Client, ctx context.Context, name string) 
 // Creates a new Droplet and returns an object *godo.Droplet. It also binds an ssh key (based on the name string)
 //	to the droplet, so you can connect to it via ssh.
 // It returns an error if request is not done correctly.
-func CreateDropletWithSSH(client *godo.Client, ctx context.Context, name string, region string, size string, sshName string, game string) (*godo.Droplet, error) {
+func CreateDropletWithSSH(client *godo.Client, ctx context.Context, name string, region string, size string, sshName string) (*godo.Droplet, error) {
 	keys, err := rawListSSH(client, ctx)
 	if err != nil {
 		return nil, err
@@ -160,7 +161,7 @@ func CreateDropletWithSSH(client *godo.Client, ctx context.Context, name string,
 
 	for _, key := range keys {
 		if key.Name == sshName {
-			droplet, err := rawCreateDropletWithSSH(client, ctx, name, region, size, key.ID, game)
+			droplet, err := rawCreateDropletWithSSH(client, ctx, name, region, size, key.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -239,7 +240,7 @@ func CheckDropletExists(client *godo.Client, ctx context.Context, name string) (
 	return false, nil
 }
 
-func ListCuackDroplets(client *godo.Client, ctx context.Context) (map[string][]string, error) {
+func ListCuackDroplets(client *godo.Client, ctx context.Context) (map[string]string, error) {
 	opt := &godo.ListOptions{
 		Page:    1,
 		PerPage: 200,
@@ -250,18 +251,14 @@ func ListCuackDroplets(client *godo.Client, ctx context.Context) (map[string][]s
 		return nil, err
 	}
 
-	list := make(map[string][]string)
+	list := make(map[string]string)
 	for _, droplet := range droplets {
 		if contains(droplet.Tags, "cuack") {
 			ip, err := GetIPv4(client, ctx, droplet.Name)
 			if err != nil {
 				return nil, err
 			}
-			var game string
-			if contains(droplet.Tags, "minecraft") {
-				game = "minecraft"
-			}
-			list[ip] = []string{droplet.Name, game}
+			list[ip] = droplet.Name
 		}
 	}
 
