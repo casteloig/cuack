@@ -1,6 +1,6 @@
 #!/bin/bash
-sed -i 's/^max-players=.*/max-players="$PLAYERS"/' server.properties
-sed -i 's/^difficulty=.*/difficulty="$DIFFICULTY"/' server.properties
+sed -i "s/^max-players=.*/max-players=$PLAYERS/" server.properties
+sed -i "s/^difficulty=.*/difficulty=$DIFFICULTY/" server.properties
 
 while true
 do

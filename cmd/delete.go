@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	do "cuack/digitalocean"
 
@@ -36,17 +36,17 @@ var deleteCmd = &cobra.Command{
 
 		err := do.GetTokenFromFile()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		client := godo.NewFromToken(do.Token)
 		ctx := context.TODO()
 
 		serverName, _ := cmd.Flags().GetString("name")
-		fmt.Println("Deleting " + serverName)
+		log.Println("Deleting " + serverName)
 		err = do.DeleteDropletByName(client, ctx, serverName)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	},
 }

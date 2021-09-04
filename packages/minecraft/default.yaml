@@ -5,30 +5,15 @@ provider:
   ssh-name: asus-laptop-linux #
   cpu: 2
   ram: 2GB
-params:
-  ports:
-    - 25565
+ports:
+  main: 25565
+  additional: 
     - 25575
+    - 25576
+params:
   world-name: world # not used yet
   players: 5
   difficulty: easy
-
-
-# name: minecraft
-# image: casteloig/minecraft:latest
-# provider:
-#   name-prov: digitalocean
-#   ssh-name: asus-laptop-linux #
-#   cpu: 2
-#   ram: 2GB
-# ports: 
-#   - 25565
-#   - 25575
-# params:
-#   world-name: world # not used yet
-#   players: 5
-#   difficulty: easy
-
 
 
 

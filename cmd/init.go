@@ -19,8 +19,8 @@ import (
 	"bufio"
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -38,9 +38,9 @@ var initCmd = &cobra.Command{
 	
 	This step is needed for creating any server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
+		log.Println("init called")
 
-		fmt.Println("Enter the token of Digital Ocean:")
+		log.Println("Enter the token of Digital Ocean:")
 		reader := bufio.NewReader(os.Stdin)
 		tokenDO, _ := reader.ReadString('\n')
 		tokenDO = strings.Trim(tokenDO, "\n")
@@ -50,11 +50,11 @@ var initCmd = &cobra.Command{
 
 		regions, err := listRegions(client, ctx)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		regionPref := "lon1"
-		fmt.Println("Enter the prefered region slug (default lon1)")
+		log.Println("Enter the prefered region slug (default lon1)")
 
 		auxRegion, _ := reader.ReadString('\n')
 		auxRegion = strings.Trim(auxRegion, "\n")
@@ -63,13 +63,13 @@ var initCmd = &cobra.Command{
 			if regionSlug != "" && err == nil {
 				regionPref = auxRegion
 			} else {
-				fmt.Println(err)
+				log.Println(err)
 			}
 		}
 
 		err = createInitFile(tokenDO, regionPref)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	},
 }
@@ -107,7 +107,7 @@ func listRegions(client *godo.Client, ctx context.Context) ([]godo.Region, error
 	}
 
 	for _, region := range regions {
-		fmt.Println(region.Slug + " (" + region.Name + ")")
+		log.Println(region.Slug + " (" + region.Name + ")")
 	}
 	return regions, nil
 }

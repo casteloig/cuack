@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	do "cuack/digitalocean"
 
@@ -39,7 +39,7 @@ to quickly create a Cobra application.`,
 
 		err := do.GetTokenFromFile()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		client := godo.NewFromToken(do.Token)
@@ -47,11 +47,11 @@ to quickly create a Cobra application.`,
 
 		list, err := do.ListCuackDroplets(client, ctx)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		for ip, name := range list {
-			fmt.Println("Name: " + name + ", IPv4: " + ip)
+			log.Println("Name: " + name + ", IPv4: " + ip)
 		}
 	},
 }

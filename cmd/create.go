@@ -17,8 +17,8 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 
@@ -44,19 +44,18 @@ var createCmd = &cobra.Command{
 
 		err := do.GetRegionFromFile()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		err = do.GetTokenFromFile()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		file, _ := cmd.Flags().GetString("file")
-		fmt.Println(file)
 		if file != "" {
 			err := yamlToStruct(file)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 		}
 
@@ -70,26 +69,26 @@ var createCmd = &cobra.Command{
 
 		// So far every server provider must be "digitalocean"
 		if do.Servers.Provider.NameProv == "digitalocean" {
-			fmt.Println("Checking if it can be created")
+			log.Println("Checking if it can be created")
 			exists, err := do.CheckDropletExists(client, ctx, do.Servers.Name)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 
 			// If not reached max number of droplets and the droplet with that name does not exists yet...
 			if !exists && (do.GetMaxDroplets(client, ctx)-do.GetNumberDroplets(client, ctx) >= 1) {
 				// Create droplet
-				fmt.Println("Creating droplet ...")
+				log.Println("Creating droplet ...")
 				_, err := do.CreateDropletWithSSH(client, ctx, do.Servers.Name, do.Region, slugDroplet, do.Servers.Provider.SshName)
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 				}
 
 				// Create server inside the droplet
-				fmt.Println("Creating server ...")
+				log.Println("Creating server ...")
 				err = do.CreateServer(client, ctx)
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 				}
 			}
 		}
@@ -114,6 +113,7 @@ func init() {
 }
 
 func yamlToStruct(file string) error {
+	//////// ADD CHECK MANDATORIES
 	fileContent, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err

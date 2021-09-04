@@ -2,12 +2,13 @@ package digitalocean
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/digitalocean/godo"
+	"github.com/melbahja/goph"
 )
 
 var Servers Server
@@ -21,10 +22,16 @@ type Provider struct {
 	Ram      string `yaml:"ram"`
 }
 
+type Ports struct {
+	Main       int   `yaml:"main"`
+	Additional []int `yaml:"additional"`
+}
+
 type Server struct {
 	Name     string `yaml:"name"`
 	Image    string `yaml:"image"`
 	Provider `yaml:"provider"`
+	Ports    `yaml:"ports"`
 	Params   map[string]interface{} `yaml:"params"`
 }
 
@@ -40,11 +47,11 @@ func CreateServer(client *godo.Client, ctx context.Context) error {
 	}
 
 	// Connect to droplet and exec server
-	fmt.Println("Connecting via ssh to the droplet...")
+	log.Println("Connecting via ssh to the droplet...")
 	clientSSH, err := ConnectSSH(ip)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Retrying again...")
+		log.Println(err)
+		log.Println("Retrying again...")
 		time.Sleep(30 * time.Second)
 		clientSSH, err = ConnectSSH(ip)
 		if err != nil {
@@ -53,51 +60,70 @@ func CreateServer(client *godo.Client, ctx context.Context) error {
 	}
 
 	defer clientSSH.Close() // Remember to close the connection
-	fmt.Println("Deploying server in: " + ip)
+	log.Println("Deploying server in: " + ip)
 
-	_, err = clientSSH.Run("docker pull " + Servers.Image)
+	name := Servers.Name
+	image := Servers.Image
+	mainPort := Servers.Ports.Main
+	additionalPorts := Servers.Ports.Additional
+	params := Servers.Params
+
+	env := make(map[string]string)
+
+	env = iterateParams(env, params)
+
+	initCommands(clientSSH, name, image, mainPort, additionalPorts, env)
+
+	return nil
+}
+
+func initCommands(clientSSH *goph.Client, name string, image string, mainPort int, additionalPorts []int, env map[string]string) error {
+	_, err := clientSSH.Run("docker pull " + Servers.Image)
 	if err != nil {
 		return err
 	}
 
-	err = clientSSH.Upload("setup_1.sh", "/root/setup_1.sh")
-	if err != nil {
-		return err
-	}
-	_, err = clientSSH.Run("chmod +x /root/setup_1.sh && bash /root/setup_1.sh")
+	_, err = clientSSH.Run(`mkdir -p /root/logs ;
+							chmod 777 /root/logs`)
 	if err != nil {
 		return err
 	}
 
-	err = clientSSH.Upload("setup_2.py", "/root/setup_2.py")
-	if err != nil {
-		return err
-	}
-	execPythonEnv := "python3 setup_2.py"
-	execPythonEnv += " name=" + Servers.Name + " image=" + Servers.Image
-	for i, env := range Servers.Params {
-		execPythonEnv += " "
-		switch e := env.(type) {
-		case string:
-			execPythonEnv += i + "=" + e
-		case int:
-			execPythonEnv += i + "=" + strconv.Itoa(e)
-		case []interface{}:
-			execPythonEnv += i + "="
-			for _, param := range e {
-				execPythonEnv += ","
-				execPythonEnv += strconv.Itoa(param.(int))
-
-			}
-		default:
-			return errors.New("param type not supported")
+	portString := " -p " + strconv.Itoa(Servers.Ports.Main) + ":" + strconv.Itoa(Servers.Ports.Main)
+	if len(Servers.Ports.Additional) > 0 {
+		for _, port := range Servers.Ports.Additional {
+			portString += " -p " + strconv.Itoa(port) + ":" + strconv.Itoa(port)
 		}
 	}
-	fmt.Println(execPythonEnv)
-	_, err = clientSSH.Run(execPythonEnv)
+
+	volString := " -v /root/logs/:/mnt/cuack/"
+
+	var envString string
+	for i, e := range env {
+		envString += " -e \"" + strings.ToUpper(i) + "=" + e + "\""
+	}
+
+	com := "docker run -d --name " + Servers.Name + portString + volString + envString + " " + image
+	log.Println(com)
+
+	_, err = clientSSH.Run(com)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func iterateParams(env map[string]string, params map[string]interface{}) map[string]string {
+	for i, param := range params {
+		switch paramType := param.(type) {
+		case string:
+			env[i] = paramType
+		case int:
+			env[i] = strconv.Itoa(paramType)
+		case map[string]interface{}:
+			iterateParams(env, paramType)
+		}
+	}
+	return env
 }

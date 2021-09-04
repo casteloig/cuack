@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"strings"
@@ -81,7 +82,7 @@ func askIsHostTrusted(host string, key ssh.PublicKey) bool {
 	fmt.Print("Would you like to add it? type yes or no: ")
 	a, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	return strings.ToLower(strings.TrimSpace(a)) == "yes"
 }
