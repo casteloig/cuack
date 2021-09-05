@@ -27,5 +27,5 @@ jobs:
           uses: docker/build-push-action@v2.5.0
           with:
             push: true
-            context: images/minecraft-latest/
+            context: games/minecraft/
             tags: casteloig/mine-server:latest
