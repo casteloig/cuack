@@ -24,7 +24,7 @@ import (
 	"os"
 	"strings"
 
-	do "cuack/digitalocean"
+	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
 	"github.com/spf13/cobra"
