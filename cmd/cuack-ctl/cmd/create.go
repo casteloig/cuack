@@ -16,9 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -113,12 +116,29 @@ func init() {
 }
 
 func yamlToStruct(file string) error {
-	//////// ADD CHECK MANDATORIES
-	fileContent, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
+	var fileContent []byte
+
+	if strings.HasPrefix(file, "https://") || strings.HasPrefix(file, "http://") {
+		file = strings.Replace(file, "blob", "raw", 1)
+		resp, err := http.Get(file)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		fileContent = buf.Bytes()
+
+	} else {
+		var err error
+		fileContent, err = ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
 	}
+
 	yaml.Unmarshal(fileContent, &do.Servers)
+	fmt.Println(do.Servers)
 
 	return nil
 }

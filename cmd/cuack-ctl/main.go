@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "cuack/cmd"
+import "cuack/cmd/cuack-ctl/cmd"
 
 func main() {
 	cmd.Execute()
