@@ -3,6 +3,7 @@ package digitalocean
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -69,7 +70,7 @@ func CreateServer(client *godo.Client, ctx context.Context) error {
 					return err
 				}
 			} else {
-				break
+				return errors.New(err.Error() + "Stop retrying connections by user")
 			}
 		}
 
