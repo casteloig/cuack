@@ -1,8 +1,11 @@
 package digitalocean
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -50,13 +53,26 @@ func CreateServer(client *godo.Client, ctx context.Context) error {
 	log.Println("Connecting via ssh to the droplet...")
 	clientSSH, err := ConnectSSH(ip)
 	if err != nil {
-		log.Println(err)
-		log.Println("Retrying again...")
-		time.Sleep(30 * time.Second)
-		clientSSH, err = ConnectSSH(ip)
-		if err != nil {
-			return err
+		for i := 0; i < 5; i++ {
+			time.Sleep(30 * time.Second)
+
+			fmt.Println("Do you want to try again? [yes/no]")
+			reader := bufio.NewReader(os.Stdin)
+			a, _ := reader.ReadString('\n')
+			retry := strings.ToLower(strings.TrimSpace(a)) == "yes"
+
+			if retry {
+				log.Println("Retrying again...")
+
+				clientSSH, err = ConnectSSH(ip)
+				if err != nil {
+					return err
+				}
+			} else {
+				break
+			}
 		}
+
 	}
 
 	defer clientSSH.Close() // Remember to close the connection
