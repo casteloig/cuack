@@ -6,6 +6,8 @@ on:
       - main
     tags:
       - latest
+    paths:
+      - 'games/'
 
 env:
     DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
