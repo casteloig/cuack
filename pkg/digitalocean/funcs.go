@@ -6,11 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/digitalocean/godo"
+	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/melbahja/goph"
 	"golang.org/x/crypto/ssh"
 )
@@ -154,15 +157,22 @@ func DeleteDropletByName(client *godo.Client, ctx context.Context, name string) 
 // Creates a new Droplet and returns an object *godo.Droplet. It also binds an ssh key (based on the name string)
 //	to the droplet, so you can connect to it via ssh.
 // It returns an error if request is not done correctly.
-func CreateDropletWithSSH(client *godo.Client, ctx context.Context, name string, region string, size string, sshName string) (*godo.Droplet, error) {
+func CreateDropletWithSSH(client *godo.Client, ctx context.Context, size string) (*godo.Droplet, error) {
 	keys, err := rawListSSH(client, ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	newName, err := generateName(client, ctx, Servers.Name)
+	if err != nil {
+		return nil, errors.New(err.Error() + "Could not generate new name")
+	}
+	Servers.Name = newName
+	log.Println(Servers.Name)
+
 	for _, key := range keys {
-		if key.Name == sshName {
-			droplet, err := rawCreateDropletWithSSH(client, ctx, name, region, size, key.ID)
+		if key.Name == Servers.Provider.SshName {
+			droplet, err := rawCreateDropletWithSSH(client, ctx, Servers.Name, Region, size, key.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -234,7 +244,9 @@ func CheckDropletExists(client *godo.Client, ctx context.Context, name string) (
 	}
 
 	for _, droplet := range droplets {
+		log.Println(droplet.Name + name)
 		if droplet.Name == name {
+			log.Println("returning true")
 			return true, nil
 		}
 	}
@@ -273,4 +285,24 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func generateName(client *godo.Client, ctx context.Context, oldName string) (string, error) {
+	rand.Seed(time.Now().UnixNano())
+
+	suffixes := strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-")
+	newName := oldName + "-" + suffixes
+
+	exists, err := CheckDropletExists(client, ctx, newName)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		newName, err = generateName(client, ctx, oldName)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return newName, nil
 }

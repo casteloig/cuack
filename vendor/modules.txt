@@ -1,6 +1,9 @@
 # github.com/digitalocean/godo v1.65.0
 ## explicit
 github.com/digitalocean/godo
+# github.com/docker/docker v20.10.8+incompatible
+## explicit
+github.com/docker/docker/pkg/namesgenerator
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/golang/protobuf v1.5.2
