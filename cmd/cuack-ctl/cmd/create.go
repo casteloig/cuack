@@ -18,7 +18,7 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,6 +33,7 @@ import (
 )
 
 var file string
+var sel string
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
@@ -56,9 +57,17 @@ var createCmd = &cobra.Command{
 
 		file, _ := cmd.Flags().GetString("file")
 		if file != "" {
-			err := yamlToStruct(file)
-			if err != nil {
-				log.Println(err)
+			sel, _ := cmd.Flags().GetString("select")
+			if sel != "" {
+				err = yamlToStruct(file, sel)
+				if err != nil {
+					log.Println(err)
+				}
+			} else {
+				err = yamlToStructFirst(file)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 		}
 
@@ -99,6 +108,9 @@ func init() {
 
 	createCmd.Flags().StringVarP(&file, "file", "f", "", "config file of the server")
 	createCmd.MarkFlagRequired("file")
+
+	createCmd.Flags().StringVarP(&sel, "select", "s", "", "select one option from the yaml by his name. If there is more than one.")
+
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -110,7 +122,7 @@ func init() {
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func yamlToStruct(file string) error {
+func yamlToStruct(file string, name string) error {
 	var fileContent []byte
 
 	if strings.HasPrefix(file, "https://") || strings.HasPrefix(file, "http://") {
@@ -132,8 +144,78 @@ func yamlToStruct(file string) error {
 		}
 	}
 
-	yaml.Unmarshal(fileContent, &do.Servers)
-	fmt.Println(do.Servers)
+	allYamlBytes, err := splitYAML(fileContent)
+	if err != nil {
+		return err
+	}
+
+	var eachYaml do.Server
+	for _, y := range allYamlBytes {
+		yaml.Unmarshal(y, &eachYaml)
+		if eachYaml.Name == name {
+			do.Servers = eachYaml
+			break
+		}
+	}
+
+	log.Println(do.Servers)
 
 	return nil
+}
+
+func yamlToStructFirst(file string) error {
+	var fileContent []byte
+
+	if strings.HasPrefix(file, "https://") || strings.HasPrefix(file, "http://") {
+		file = strings.Replace(file, "blob", "raw", 1)
+		resp, err := http.Get(file)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		fileContent = buf.Bytes()
+
+	} else {
+		var err error
+		fileContent, err = ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
+	}
+
+	allYamlBytes, err := splitYAML(fileContent)
+	if err != nil {
+		return err
+	}
+
+	yaml.Unmarshal(allYamlBytes[0], &do.Servers)
+
+	log.Println(do.Servers)
+
+	return nil
+}
+
+func splitYAML(resources []byte) ([][]byte, error) {
+
+	dec := yaml.NewDecoder(bytes.NewReader(resources))
+
+	var res [][]byte
+	for {
+		var value interface{}
+		err := dec.Decode(&value)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		valueBytes, err := yaml.Marshal(value)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, valueBytes)
+	}
+	return res, nil
 }
