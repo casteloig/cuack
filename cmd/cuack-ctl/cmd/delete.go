@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	do "cuack/pkg/digitalocean"
@@ -39,22 +40,27 @@ var deleteCmd = &cobra.Command{
 			log.Println(err)
 		}
 
-		client := godo.NewFromToken(do.Token)
-		ctx := context.TODO()
+		if len(args) > 0 {
+			client := godo.NewFromToken(do.Token)
+			ctx := context.TODO()
 
-		serverName, _ := cmd.Flags().GetString("name")
-		log.Println("Deleting " + serverName)
-		err = do.DeleteDropletByName(client, ctx, serverName)
-		if err != nil {
+			serverName := args[0]
+			log.Println("Deleting " + serverName)
+			err = do.DeleteDropletByName(client, ctx, serverName)
+			if err != nil {
+				log.Println(err)
+			}
+		} else {
+			err = errors.New("not enough arguments")
 			log.Println(err)
 		}
+
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
-	deleteCmd.Flags().StringVarP(&name, "name", "n", "", "delete the named container")
-	deleteCmd.MarkFlagRequired("name")
+
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
