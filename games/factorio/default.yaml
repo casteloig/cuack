@@ -1,0 +1,52 @@
+name: factorio
+image: casteloig/factorio:latest
+provider:
+  name_prov: digitalocean
+  ssh_name: asus-laptop-linux #
+  cpu: 2
+  ram: 2GB
+ports:
+  main: 34197
+  additional: 
+    - 27015
+params:
+  players: 5
+  world_name: savegame
+
+
+
+
+
+
+
+# name: minecraft
+# image: minecraft:13.4 
+# provider:
+# name-prov: digitalocean
+# ssh-name: asus-laptop-linux # 
+# cpu: 2
+# ram: 2GB
+# params:
+# image: minecraft-default #could be replaced with another docker image with same files as this
+# world-name: world # not used yet
+# players: 5
+# difficulty: easy
+# ---
+# name: minecraft-big
+# provider:
+# name-prov: digitalocean
+# ssh-name: asus-laptop-linux # 
+# cpu: 5
+# ram: 16GB
+# params:
+# image: minecraft-default #could be replaced with another docker image with same files as this
+# world-name: world # not used yet
+# players: 100
+# difficulty: easy
+
+
+
+# cuack apply minecraft 
+# cuack apply minecraft-big
+
+# cuack apply micraft -f minecraft.yaml
