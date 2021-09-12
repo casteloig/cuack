@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/digitalocean/godo"
 	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/melbahja/goph"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -85,7 +85,7 @@ func askIsHostTrusted(host string, key ssh.PublicKey) bool {
 	fmt.Print("Would you like to add it? type yes or no: ")
 	a, err := reader.ReadString('\n')
 	if err != nil {
-		log.Println(err)
+		logrus.WithFields(logrus.Fields{}).Info(err)
 	}
 	return strings.ToLower(strings.TrimSpace(a)) == "yes"
 }
@@ -168,7 +168,6 @@ func CreateDropletWithSSH(client *godo.Client, ctx context.Context, size string)
 		return nil, errors.New(err.Error() + "Could not generate new name")
 	}
 	Servers.Name = newName
-	log.Println(Servers.Name)
 
 	for _, key := range keys {
 		if key.Name == Servers.Provider.SshName {
@@ -176,6 +175,10 @@ func CreateDropletWithSSH(client *godo.Client, ctx context.Context, size string)
 			if err != nil {
 				return nil, err
 			}
+			logrus.WithFields(logrus.Fields{
+				"command":    "create",
+				"final-name": Servers.Name,
+			}).Info("Droplet created")
 			return droplet, nil
 		}
 	}
@@ -244,9 +247,7 @@ func CheckDropletExists(client *godo.Client, ctx context.Context, name string) (
 	}
 
 	for _, droplet := range droplets {
-		log.Println(droplet.Name + name)
 		if droplet.Name == name {
-			log.Println("returning true")
 			return true, nil
 		}
 	}

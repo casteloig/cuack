@@ -15,7 +15,32 @@ limitations under the License.
 */
 package main
 
-import "cuack/cmd/cuack-ctl/cmd"
+import (
+	"cuack/cmd/cuack-ctl/cmd"
+	"os"
+	"time"
+
+	"github.com/sirupsen/logrus"
+)
+
+func init() {
+	logrus.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: time.RFC822,
+	})
+	logrus.SetLevel(logrus.InfoLevel)
+
+	home, _ := os.UserHomeDir()
+	dir := home + "/.cuack.logs"
+
+	file, err := os.OpenFile(dir, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		logrus.SetOutput(file)
+	} else {
+		logrus.SetOutput(os.Stderr)
+		logrus.Warn("Could not open the log file. Redirecting to stderr")
+	}
+
+}
 
 func main() {
 	cmd.Execute()

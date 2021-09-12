@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/digitalocean/godo"
 	"github.com/melbahja/goph"
+	"github.com/sirupsen/logrus"
 )
 
 var Servers Server
@@ -20,8 +20,8 @@ var Token string
 var Region string
 
 type Provider struct {
-	NameProv string `yaml:"name-prov"`
-	SshName  string `yaml:"ssh-name"`
+	NameProv string `yaml:"name_prov"`
+	SshName  string `yaml:"ssh_name"`
 	Cpu      int    `yaml:"cpu"`
 	Ram      string `yaml:"ram"`
 }
@@ -41,43 +41,51 @@ type Server struct {
 
 // Once the droplet is created, this func connects to it via SSH and deploys the game server
 // It returns an error if it is not deployed correctly
-func CreateServer(client *godo.Client, ctx context.Context) error {
+func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 	// Make time for droplet to be deployed correctly
 	time.Sleep(60 * time.Second)
 	// Get the IPv4
 	ip, err := GetIPv4(client, ctx, Servers.Name)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Connect to droplet and exec server
-	log.Println("Connecting via ssh to the droplet...")
+	logrus.WithFields(logrus.Fields{
+		"command": "create",
+		"ip":      ip,
+	}).Info("Connecting ssh to droplet")
 	clientSSH, err := ConnectSSH(ip)
 	if err != nil {
 		for i := 0; i < 5; i++ {
 			time.Sleep(30 * time.Second)
 
-			fmt.Println("Do you want to try again? [yes/no]")
+			fmt.Println("Connection refused, do you want to try again? [yes/no]")
 			reader := bufio.NewReader(os.Stdin)
 			a, _ := reader.ReadString('\n')
 			retry := strings.ToLower(strings.TrimSpace(a)) == "yes"
 
 			if retry {
-				log.Println("Retrying again...")
+				logrus.WithFields(logrus.Fields{
+					"ip": ip,
+				}).Info("Retrying to connect")
 
 				clientSSH, err = ConnectSSH(ip)
 				if err != nil {
-					return err
+					return "", err
 				}
 			} else {
-				return errors.New(err.Error() + "Stop retrying connections by user")
+				return "", errors.New(err.Error() + "Stop retrying connections by user")
 			}
 		}
 
 	}
 
 	defer clientSSH.Close() // Remember to close the connection
-	log.Println("Deploying server in: " + ip)
+	logrus.WithFields(logrus.Fields{
+		"command": "create",
+		"ip":      ip,
+	}).Info("Deploying server")
 
 	name := Servers.Name
 	image := Servers.Image
@@ -91,7 +99,12 @@ func CreateServer(client *godo.Client, ctx context.Context) error {
 
 	initCommands(clientSSH, name, image, mainPort, additionalPorts, env)
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"command": "create",
+		"ip":      ip,
+	}).Info("Server deployed")
+
+	return ip, nil
 }
 
 func initCommands(clientSSH *goph.Client, name string, image string, mainPort int, additionalPorts []int, env map[string]string) error {
@@ -121,7 +134,6 @@ func initCommands(clientSSH *goph.Client, name string, image string, mainPort in
 	}
 
 	com := "docker run -d --name " + Servers.Name + portString + volString + envString + " " + image
-	log.Println(com)
 
 	_, err = clientSSH.Run(com)
 	if err != nil {

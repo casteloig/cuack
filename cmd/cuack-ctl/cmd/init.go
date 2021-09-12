@@ -19,6 +19,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -27,6 +28,7 @@ import (
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -38,9 +40,8 @@ var initCmd = &cobra.Command{
 	
 	This step is needed for creating any server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("init called")
 
-		log.Println("Enter the token of Digital Ocean:")
+		fmt.Println("Enter the token of Digital Ocean:")
 		reader := bufio.NewReader(os.Stdin)
 		tokenDO, _ := reader.ReadString('\n')
 		tokenDO = strings.Trim(tokenDO, "\n")
@@ -50,7 +51,9 @@ var initCmd = &cobra.Command{
 
 		regions, err := listRegions(client, ctx)
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "init",
+			}).Error(err)
 		}
 
 		regionPref := "lon1"
@@ -63,14 +66,23 @@ var initCmd = &cobra.Command{
 			if regionSlug != "" && err == nil {
 				regionPref = auxRegion
 			} else {
-				log.Println(err)
+				logrus.WithFields(logrus.Fields{
+					"command": "init",
+				}).Error(err)
 			}
 		}
 
 		err = createInitFile(tokenDO, regionPref)
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "init",
+			}).Error(err)
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"command": "init",
+			"region":  regionPref,
+		}).Info("Sucesfully created init file")
 	},
 }
 

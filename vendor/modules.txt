@@ -41,6 +41,9 @@ github.com/pelletier/go-toml
 github.com/pkg/errors
 # github.com/pkg/sftp v1.12.0
 github.com/pkg/sftp
+# github.com/sirupsen/logrus v1.8.1
+## explicit
+github.com/sirupsen/logrus
 # github.com/spf13/afero v1.6.0
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -82,6 +85,7 @@ golang.org/x/oauth2/internal
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.3.5
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
@@ -124,7 +128,6 @@ google.golang.org/protobuf/types/descriptorpb
 # gopkg.in/ini.v1 v1.62.0
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
-## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit

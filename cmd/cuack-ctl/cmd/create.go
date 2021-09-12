@@ -18,9 +18,9 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,6 +28,7 @@ import (
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v3"
 )
@@ -48,11 +49,15 @@ var createCmd = &cobra.Command{
 
 		err := do.GetRegionFromFile()
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "create",
+			}).Error(err)
 		}
 		err = do.GetTokenFromFile()
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "create",
+			}).Panic(err)
 		}
 
 		file, _ := cmd.Flags().GetString("file")
@@ -61,12 +66,18 @@ var createCmd = &cobra.Command{
 			if sel != "" {
 				err = yamlToStruct(file, sel)
 				if err != nil {
-					log.Println(err)
+					logrus.WithFields(logrus.Fields{
+						"command": "create",
+						"file":    file,
+					}).Error(err)
 				}
 			} else {
 				err = yamlToStructFirst(file)
 				if err != nil {
-					log.Println(err)
+					logrus.WithFields(logrus.Fields{
+						"command": "create",
+						"file":    file,
+					}).Error(err)
 				}
 			}
 		}
@@ -85,18 +96,32 @@ var createCmd = &cobra.Command{
 			// If not reached max number of droplets
 			if do.GetMaxDroplets(client, ctx)-do.GetNumberDroplets(client, ctx) >= 1 {
 				// Create droplet
-				log.Println("Trying to create droplet ...")
+				fmt.Println("Trying to create droplet ...")
 				_, err := do.CreateDropletWithSSH(client, ctx, slugDroplet)
 				if err != nil {
-					log.Println(err)
+					logrus.WithFields(logrus.Fields{
+						"command": "delete",
+						"name":    do.Servers.Name,
+					}).Error(err)
 				}
 
 				// Create server inside the droplet
-				log.Println("Creating server ...")
-				err = do.CreateServer(client, ctx)
+				fmt.Println("Creating server ...")
+				ip, err := do.CreateServer(client, ctx)
 				if err != nil {
-					log.Println(err)
+					logrus.WithFields(logrus.Fields{
+						"command": "delete",
+						"name":    do.Servers.Name,
+					}).Error(err)
 				}
+
+				fmt.Println("Server created in ip " + ip)
+				logrus.WithFields(logrus.Fields{
+					"command":    "create",
+					"final-name": do.Servers.Name,
+					"file":       file,
+					"ip":         ip,
+				}).Info("Sucesfully created droplet and server")
 			}
 		}
 
@@ -158,8 +183,6 @@ func yamlToStruct(file string, name string) error {
 		}
 	}
 
-	log.Println(do.Servers)
-
 	return nil
 }
 
@@ -191,8 +214,6 @@ func yamlToStructFirst(file string) error {
 	}
 
 	yaml.Unmarshal(allYamlBytes[0], &do.Servers)
-
-	log.Println(do.Servers)
 
 	return nil
 }

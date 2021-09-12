@@ -17,11 +17,12 @@ package cmd
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +35,9 @@ var listCmd = &cobra.Command{
 
 		err := do.GetTokenFromFile()
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "list",
+			}).Panic(err)
 		}
 
 		client := godo.NewFromToken(do.Token)
@@ -42,12 +45,21 @@ var listCmd = &cobra.Command{
 
 		list, err := do.ListCuackDroplets(client, ctx)
 		if err != nil {
-			log.Println(err)
+			logrus.WithFields(logrus.Fields{
+				"command": "list",
+			}).Error(err)
 		}
 
+		fmt.Println("Listing droplets")
+		logrus.WithFields(logrus.Fields{
+			"command":  "list",
+			"droplets": len(list),
+		}).Info("Listing droplets")
 		for ip, name := range list {
-			log.Println("Name: " + name + ", IPv4: " + ip)
+			fmt.Println("Name: " + name + ", IPv4: " + ip)
+
 		}
+
 	},
 }
 

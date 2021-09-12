@@ -17,16 +17,15 @@ package cmd
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log"
 
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
-
-var name string
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
@@ -35,24 +34,35 @@ var deleteCmd = &cobra.Command{
 	Long:  `Deletes a droplet taking as a flag the name of the droplet`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		err := do.GetTokenFromFile()
-		if err != nil {
-			log.Println(err)
-		}
-
 		if len(args) > 0 {
+			serverName := args[0]
+
+			err := do.GetTokenFromFile()
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"command": "delete",
+					"name":    serverName,
+				}).Panic(err)
+			}
+
 			client := godo.NewFromToken(do.Token)
 			ctx := context.TODO()
 
-			serverName := args[0]
 			log.Println("Deleting " + serverName)
 			err = do.DeleteDropletByName(client, ctx, serverName)
 			if err != nil {
-				log.Println(err)
+				logrus.WithFields(logrus.Fields{
+					"command": "delete",
+				}).Error(err)
 			}
+
+			logrus.WithFields(logrus.Fields{
+				"command": "delete",
+				"name":    serverName,
+			}).Info("Sucesfully deleted droplet")
+
 		} else {
-			err = errors.New("not enough arguments")
-			log.Println(err)
+			fmt.Println("Not enough arguments")
 		}
 
 	},
