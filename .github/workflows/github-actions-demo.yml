@@ -26,6 +26,7 @@ jobs:
           with:
             token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
         - name: release
+          uses: wangyoucao577/go-release-action@v1.16
           with:
             github_token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
             goos: ${{ matrix.goos }}
