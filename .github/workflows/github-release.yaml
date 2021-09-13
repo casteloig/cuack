@@ -27,7 +27,7 @@ jobs:
         - run: go build -mod vendor -o ./bin/cuack-ctl ./cmd/cuack-ctl/
 
         - name: release  
-          uses: wangyoucao577/go-release-action@v1.16
+          uses: wangyoucao577/go-release-action@v1.17
           with:
             github_token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
             goos: ${{ matrix.goos }}
