@@ -14,6 +14,26 @@ env:
     DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
 
 jobs:
+    release_demo_cuack:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          goos: [linux, windows]
+          goarch: ["386", "amd64"]
+      if: github.event_name == 'push'
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
+        - name: release
+          with:
+            github_token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
+            goos: ${{ matrix.goos }}
+            goarch: ${{ matrix.goarch }}
+            goversion: "https://dl.google.com/go/go1.17.linux-amd64.tar.gz"
+            project_path: "./cmd/cuack-ctl/main.go"
+            binary_name: "cuack-ctl"
+
     push_minecraft_latest:
       runs-on: ubuntu-latest
       if: github.event_name == 'push'
@@ -31,3 +51,21 @@ jobs:
             push: true
             context: games/minecraft/
             tags: casteloig/mine-server:latest
+
+    push_factorio_latest:
+      runs-on: ubuntu-latest
+      if: github.event_name == 'push'
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
+        - name: Docker login
+          run: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        - name: Build and push Docker Images
+          id: docker_build
+          uses: docker/build-push-action@v2.5.0
+          with:
+            push: true
+            context: games/factorio/
+            tags: casteloig/factorio:latest
