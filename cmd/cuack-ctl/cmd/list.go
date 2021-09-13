@@ -18,6 +18,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 
 	do "cuack/pkg/digitalocean"
 
@@ -35,9 +36,7 @@ var listCmd = &cobra.Command{
 
 		err := do.GetTokenFromFile()
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "list",
-			}).Panic(err)
+			log.Fatal(err)
 		}
 
 		client := godo.NewFromToken(do.Token)
@@ -45,12 +44,10 @@ var listCmd = &cobra.Command{
 
 		list, err := do.ListCuackDroplets(client, ctx)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "list",
-			}).Error(err)
+			log.Fatal(err)
 		}
 
-		fmt.Println("Listing droplets")
+		fmt.Println("Listing droplets:")
 		logrus.WithFields(logrus.Fields{
 			"command":  "list",
 			"droplets": len(list),

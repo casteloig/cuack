@@ -47,7 +47,7 @@ func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 	// Get the IPv4
 	ip, err := GetIPv4(client, ctx, Servers.Name)
 	if err != nil {
-		return "", err
+		return "", errors.New("could not get the IPv4 from the server")
 	}
 
 	// Connect to droplet and exec server
@@ -72,10 +72,10 @@ func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 
 				clientSSH, err = ConnectSSH(ip)
 				if err != nil {
-					return "", err
+					return "", errors.New("error trying to connect to server via ssh")
 				}
 			} else {
-				return "", errors.New(err.Error() + "Stop retrying connections by user")
+				return "", errors.New("stop retrying connections by user")
 			}
 		}
 

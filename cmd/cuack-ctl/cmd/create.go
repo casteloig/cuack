@@ -18,9 +18,11 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -49,15 +51,11 @@ var createCmd = &cobra.Command{
 
 		err := do.GetRegionFromFile()
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "create",
-			}).Error(err)
+			log.Fatalln(err)
 		}
 		err = do.GetTokenFromFile()
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "create",
-			}).Panic(err)
+			log.Fatalln(err)
 		}
 
 		file, _ := cmd.Flags().GetString("file")
@@ -66,18 +64,12 @@ var createCmd = &cobra.Command{
 			if sel != "" {
 				err = yamlToStruct(file, sel)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"command": "create",
-						"file":    file,
-					}).Error(err)
+					log.Fatalln(err)
 				}
 			} else {
 				err = yamlToStructFirst(file)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"command": "create",
-						"file":    file,
-					}).Error(err)
+					log.Fatalln(err)
 				}
 			}
 		}
@@ -99,20 +91,14 @@ var createCmd = &cobra.Command{
 				fmt.Println("Trying to create droplet ...")
 				_, err := do.CreateDropletWithSSH(client, ctx, slugDroplet)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"command": "delete",
-						"name":    do.Servers.Name,
-					}).Error(err)
+					log.Fatalln(err)
 				}
 
 				// Create server inside the droplet
 				fmt.Println("Creating server ...")
 				ip, err := do.CreateServer(client, ctx)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
-						"command": "delete",
-						"name":    do.Servers.Name,
-					}).Error(err)
+					log.Fatalln(err)
 				}
 
 				fmt.Println("Server created in ip " + ip)
@@ -154,7 +140,7 @@ func yamlToStruct(file string, name string) error {
 		file = strings.Replace(file, "blob", "raw", 1)
 		resp, err := http.Get(file)
 		if err != nil {
-			return err
+			return errors.New("error downloading yaml file")
 		}
 		defer resp.Body.Close()
 		buf := new(bytes.Buffer)
@@ -165,13 +151,13 @@ func yamlToStruct(file string, name string) error {
 		var err error
 		fileContent, err = ioutil.ReadFile(file)
 		if err != nil {
-			return err
+			return errors.New("error reading yaml file")
 		}
 	}
 
 	allYamlBytes, err := splitYAML(fileContent)
 	if err != nil {
-		return err
+		return errors.New("sintactical error in yaml file")
 	}
 
 	var eachYaml do.Server
@@ -193,7 +179,7 @@ func yamlToStructFirst(file string) error {
 		file = strings.Replace(file, "blob", "raw", 1)
 		resp, err := http.Get(file)
 		if err != nil {
-			return err
+			return errors.New("error downloading yaml file")
 		}
 		defer resp.Body.Close()
 		buf := new(bytes.Buffer)
@@ -204,13 +190,13 @@ func yamlToStructFirst(file string) error {
 		var err error
 		fileContent, err = ioutil.ReadFile(file)
 		if err != nil {
-			return err
+			return errors.New("error reading yaml file")
 		}
 	}
 
 	allYamlBytes, err := splitYAML(fileContent)
 	if err != nil {
-		return err
+		return errors.New("sintactical error in yaml file")
 	}
 
 	yaml.Unmarshal(allYamlBytes[0], &do.Servers)

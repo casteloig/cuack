@@ -39,23 +39,19 @@ var deleteCmd = &cobra.Command{
 
 			err := do.GetTokenFromFile()
 			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"command": "delete",
-					"name":    serverName,
-				}).Panic(err)
+				log.Println(err)
 			}
 
 			client := godo.NewFromToken(do.Token)
 			ctx := context.TODO()
 
-			log.Println("Deleting " + serverName)
+			log.Println("Deleting " + serverName + "...")
 			err = do.DeleteDropletByName(client, ctx, serverName)
 			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"command": "delete",
-				}).Error(err)
+				log.Println(err)
 			}
 
+			fmt.Println("Droplet" + serverName + "deleted properly")
 			logrus.WithFields(logrus.Fields{
 				"command": "delete",
 				"name":    serverName,

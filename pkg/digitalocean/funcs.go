@@ -81,8 +81,7 @@ func VerifyHost(host string, remote net.Addr, key ssh.PublicKey) error {
 // Support func for HostCallBack function custom
 func askIsHostTrusted(host string, key ssh.PublicKey) bool {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Unknown Host: %s \nFingerprint: %s \n", host, ssh.FingerprintSHA256(key))
-	fmt.Print("Would you like to add it? type yes or no: ")
+	fmt.Print("Would you like to add host to 'known_hosts'? [yes/no] ")
 	a, err := reader.ReadString('\n')
 	if err != nil {
 		logrus.WithFields(logrus.Fields{}).Info(err)
@@ -109,7 +108,7 @@ func GetRegionFromFile() error {
 			return nil
 		}
 	}
-	return err
+	return errors.New("error getting the region from file")
 }
 
 // Stores in global var (Token string) the region obtained by cuack.config.
@@ -126,12 +125,12 @@ func GetTokenFromFile() error {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		Token = scanner.Text()
-		if strings.HasPrefix(Token, "key") {
+		if strings.HasPrefix(Token, "key") && strings.Fields(Token)[1] != "" {
 			Token = strings.Fields(Token)[1]
 			return nil
 		}
 	}
-	return err
+	return errors.New("error getting the token from file")
 }
 
 // Stores in global var (Token string) the region obtained by cuack.config.
@@ -139,14 +138,14 @@ func GetTokenFromFile() error {
 func DeleteDropletByName(client *godo.Client, ctx context.Context, name string) error {
 	droplets, err := rawListDroplets(client, ctx)
 	if err != nil {
-		return err
+		return errors.New("error getting list of existing droplets")
 	}
 
 	for _, droplet := range droplets {
 		if droplet.Name == name {
 			err := rawDeleteDroplet(client, ctx, droplet.ID)
 			if err != nil {
-				return err
+				return errors.New("error trying to delete the droplet")
 			}
 			return nil
 		}
@@ -160,12 +159,12 @@ func DeleteDropletByName(client *godo.Client, ctx context.Context, name string) 
 func CreateDropletWithSSH(client *godo.Client, ctx context.Context, size string) (*godo.Droplet, error) {
 	keys, err := rawListSSH(client, ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error getting existing ssh keys")
 	}
 
 	newName, err := generateName(client, ctx, Servers.Name)
 	if err != nil {
-		return nil, errors.New(err.Error() + "Could not generate new name")
+		return nil, errors.New("could not generate new name")
 	}
 	Servers.Name = newName
 
@@ -173,7 +172,7 @@ func CreateDropletWithSSH(client *godo.Client, ctx context.Context, size string)
 		if key.Name == Servers.Provider.SshName {
 			droplet, err := rawCreateDropletWithSSH(client, ctx, Servers.Name, Region, size, key.ID)
 			if err != nil {
-				return nil, err
+				return nil, errors.New("error creating droplet")
 			}
 			logrus.WithFields(logrus.Fields{
 				"command":    "create",
@@ -262,7 +261,7 @@ func ListCuackDroplets(client *godo.Client, ctx context.Context) (map[string]str
 
 	droplets, _, err := client.Droplets.List(ctx, opt)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error listting cuack droplets")
 	}
 
 	list := make(map[string]string)
@@ -270,7 +269,7 @@ func ListCuackDroplets(client *godo.Client, ctx context.Context) (map[string]str
 		if contains(droplet.Tags, "cuack") {
 			ip, err := GetIPv4(client, ctx, droplet.Name)
 			if err != nil {
-				return nil, err
+				return nil, errors.New("could not get the IPv4 from the server")
 			}
 			list[ip] = droplet.Name
 		}

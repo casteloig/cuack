@@ -51,13 +51,11 @@ var initCmd = &cobra.Command{
 
 		regions, err := listRegions(client, ctx)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "init",
-			}).Error(err)
+			log.Println(err)
 		}
 
 		regionPref := "lon1"
-		log.Println("Enter the prefered region slug (default lon1)")
+		fmt.Println("Enter the prefered region slug (default lon1)")
 
 		auxRegion, _ := reader.ReadString('\n')
 		auxRegion = strings.Trim(auxRegion, "\n")
@@ -66,19 +64,16 @@ var initCmd = &cobra.Command{
 			if regionSlug != "" && err == nil {
 				regionPref = auxRegion
 			} else {
-				logrus.WithFields(logrus.Fields{
-					"command": "init",
-				}).Error(err)
+				log.Println(err)
 			}
 		}
 
 		err = createInitFile(tokenDO, regionPref)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"command": "init",
-			}).Error(err)
+			log.Println(err)
 		}
 
+		fmt.Println("Cuack initialized properly")
 		logrus.WithFields(logrus.Fields{
 			"command": "init",
 			"region":  regionPref,
@@ -103,11 +98,25 @@ func init() {
 
 func createInitFile(key string, region string) error {
 	home, _ := os.UserHomeDir()
-	dir := home + "/.config/cuack.config"
+	dir := home + "/.config/"
+	fileDir := dir + "cuack.config"
 
-	err := ioutil.WriteFile(dir, []byte("key "+key+"\n"+"region "+region), 0755)
+	err := os.MkdirAll(dir, os.ModeDir)
 	if err != nil {
-		return err
+		err = fmt.Errorf("%w; failed creating config file", err)
+		logrus.WithFields(logrus.Fields{
+			"command": "init",
+		}).Error(err)
+		return errors.New("error creating init config file")
+	}
+
+	err = ioutil.WriteFile(fileDir, []byte("key "+key+"\n"+"region "+region), 0755)
+	if err != nil {
+		err = fmt.Errorf("%w; failed creating config file", err)
+		logrus.WithFields(logrus.Fields{
+			"command": "init",
+		}).Error(err)
+		return errors.New("error creating init config file")
 	}
 	return nil
 }
@@ -115,11 +124,11 @@ func createInitFile(key string, region string) error {
 func listRegions(client *godo.Client, ctx context.Context) ([]godo.Region, error) {
 	regions, err := do.GetAvailableRegions(client, ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error listing regions")
 	}
 
 	for _, region := range regions {
-		log.Println(region.Slug + " (" + region.Name + ")")
+		fmt.Println(region.Slug + " (" + region.Name + ")")
 	}
 	return regions, nil
 }
