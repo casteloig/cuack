@@ -22,11 +22,11 @@ jobs:
           with:
             token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
 
-        - name: build bin
-          uses: actions/setup-go@v2
-          with:
-            go-version: '1.17' # The Go version to download (if necessary) and use.
-        - run: go build -mod vendor -o ./bin/cuack-ctl ./cmd/cuack-ctl/
+        # - name: build bin
+        #   uses: actions/setup-go@v2
+        #   with:
+        #     go-version: '1.17' # The Go version to download (if necessary) and use.
+        # - run: go build -mod vendor -o ./bin/cuack-ctl ./cmd/cuack-ctl/
 
         - name: release  
           uses: wangyoucao577/go-release-action@v1.17
