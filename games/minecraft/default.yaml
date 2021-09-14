@@ -2,15 +2,14 @@ name: minecraft
 image: casteloig/mine-server:latest
 provider:
   name_prov: digitalocean
-  ssh_name: asus-laptop-linux #
+  ssh_name: asus-laptop-linux
   cpu: 2
   ram: 2GB
 ports:
   main: 25565
   additional: 
     - 25575
-    - 25576
-params:   # It will be removed on every param the "-" when passed as env-var to docker container
+params:   
   world_name: world # not used yet
   players: 5
   difficulty: easy
@@ -19,15 +18,14 @@ name: minecraft-big
 image: casteloig/mine-server:latest
 provider:
   name_prov: digitalocean
-  ssh_name: asus-laptop-linux #
+  ssh_name: asus-laptop-linux
   cpu: 2
   ram: 2GB
 ports:
   main: 25565
   additional: 
     - 25575
-    - 25576
-params:   # It will be removed on every param the "-" when passed as env-var to docker container
+params:   
   world_name: world # not used yet
   players: 10
   difficulty: medium
