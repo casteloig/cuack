@@ -26,7 +26,7 @@ jobs:
           uses: actions/setup-go@v2
           with:
             go-version: '1.17' # The Go version to download (if necessary) and use.
-        - run: go version
+        - run: go build -mod vendor -o ./bin/cuack-ctl ./cmd/cuack-ctl/
 
         # - name: release  
         #   uses: wangyoucao577/go-release-action@v1.17
