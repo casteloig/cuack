@@ -40,7 +40,7 @@ jobs:
             draft: false
             prerelease: false
             release_name: ${{ steps.get_version.outputs.VERSION }}
-            tag_name: ${{ github.ref }}
+            tag_name: ${{ steps.get_version.outputs.VERSION }}
           env:
             GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GITHUB }}
 
