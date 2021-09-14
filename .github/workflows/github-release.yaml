@@ -39,10 +39,10 @@ jobs:
           uses: actions/create-release@v1
           id: create_release
           with:
+            tag_name: ${{ steps.tagName.outputs.tag }}
+            release_name: ${{ steps.tagName.outputs.tag }}
             draft: false
             prerelease: false
-            release_name: ${{ steps.tagName.outputs.tag }}
-            tag_name: ${{ steps.tagName.outputs.tag }}
           env:
             GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GITHUB }}
 
