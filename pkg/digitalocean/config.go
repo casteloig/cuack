@@ -59,7 +59,7 @@ func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 	if err != nil {
 		for i := 0; i < 5; i++ {
 			time.Sleep(30 * time.Second)
-
+			fmt.Println(err)
 			fmt.Println("Connection refused, do you want to try again? [yes/no]")
 			reader := bufio.NewReader(os.Stdin)
 			a, _ := reader.ReadString('\n')
@@ -108,7 +108,13 @@ func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 }
 
 func initCommands(clientSSH *goph.Client, name string, image string, mainPort int, additionalPorts []int, env map[string]string) error {
-	_, err := clientSSH.Run("docker pull " + Servers.Image)
+
+	err := clientSSH.Upload("/tmp/"+Servers.Name, "/root/"+Servers.Name)
+	if err != nil {
+		return err
+	}
+
+	_, err = clientSSH.Run("docker pull " + Servers.Image)
 	if err != nil {
 		return err
 	}

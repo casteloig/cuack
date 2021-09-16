@@ -58,16 +58,17 @@ var createCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
+		var yamlFile []byte
 		file, _ := cmd.Flags().GetString("file")
 		if file != "" {
 			sel, _ := cmd.Flags().GetString("select")
 			if sel != "" {
-				err = yamlToStruct(file, sel)
+				yamlFile, err = yamlToStruct(file, sel)
 				if err != nil {
 					log.Fatalln(err)
 				}
 			} else {
-				err = yamlToStructFirst(file)
+				yamlFile, err = yamlToStructFirst(file)
 				if err != nil {
 					log.Fatalln(err)
 				}
@@ -96,6 +97,7 @@ var createCmd = &cobra.Command{
 
 				// Create server inside the droplet
 				fmt.Println("Creating server ...")
+				createTempYaml(yamlFile)
 				ip, err := do.CreateServer(client, ctx)
 				if err != nil {
 					log.Fatalln(err)
@@ -133,14 +135,14 @@ func init() {
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func yamlToStruct(file string, name string) error {
+func yamlToStruct(file string, name string) ([]byte, error) {
 	var fileContent []byte
 
 	if strings.HasPrefix(file, "https://") || strings.HasPrefix(file, "http://") {
 		file = strings.Replace(file, "blob", "raw", 1)
 		resp, err := http.Get(file)
 		if err != nil {
-			return errors.New("error downloading yaml file")
+			return nil, errors.New("error downloading yaml file")
 		}
 		defer resp.Body.Close()
 		buf := new(bytes.Buffer)
@@ -151,17 +153,19 @@ func yamlToStruct(file string, name string) error {
 		var err error
 		fileContent, err = ioutil.ReadFile(file)
 		if err != nil {
-			return errors.New("error reading yaml file")
+			return nil, errors.New("error reading yaml file")
 		}
 	}
 
 	allYamlBytes, err := splitYAML(fileContent)
 	if err != nil {
-		return errors.New("sintactical error in yaml file")
+		return nil, errors.New("sintactical error in yaml file")
 	}
 
+	var fileStructSelected []byte
 	var eachYaml do.Server
 	for _, y := range allYamlBytes {
+		fileStructSelected = y
 		yaml.Unmarshal(y, &eachYaml)
 		if eachYaml.Name == name {
 			do.Servers = eachYaml
@@ -169,17 +173,27 @@ func yamlToStruct(file string, name string) error {
 		}
 	}
 
+	return fileStructSelected, nil
+}
+
+func createTempYaml(fileContent []byte) error {
+	fileDir := "/tmp/" + do.Servers.Name
+	err := ioutil.WriteFile(fileDir, fileContent, 0755)
+	if err != nil {
+		return errors.New("error creating temp yaml file")
+	}
+
 	return nil
 }
 
-func yamlToStructFirst(file string) error {
+func yamlToStructFirst(file string) ([]byte, error) {
 	var fileContent []byte
 
 	if strings.HasPrefix(file, "https://") || strings.HasPrefix(file, "http://") {
 		file = strings.Replace(file, "blob", "raw", 1)
 		resp, err := http.Get(file)
 		if err != nil {
-			return errors.New("error downloading yaml file")
+			return nil, errors.New("error downloading yaml file")
 		}
 		defer resp.Body.Close()
 		buf := new(bytes.Buffer)
@@ -190,18 +204,18 @@ func yamlToStructFirst(file string) error {
 		var err error
 		fileContent, err = ioutil.ReadFile(file)
 		if err != nil {
-			return errors.New("error reading yaml file")
+			return nil, errors.New("error reading yaml file")
 		}
 	}
 
 	allYamlBytes, err := splitYAML(fileContent)
 	if err != nil {
-		return errors.New("sintactical error in yaml file")
+		return nil, errors.New("sintactical error in yaml file")
 	}
 
 	yaml.Unmarshal(allYamlBytes[0], &do.Servers)
 
-	return nil
+	return allYamlBytes[0], nil
 }
 
 func splitYAML(resources []byte) ([][]byte, error) {
