@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"strconv"
 	"strings"
@@ -161,4 +162,74 @@ func iterateParams(env map[string]string, params map[string]interface{}) map[str
 		}
 	}
 	return env
+}
+
+func InspectDroplet(client *godo.Client, ctx context.Context, nameServer string) (Inspect, error) {
+	ip, err := GetIPv4(client, ctx, nameServer)
+	if err != nil {
+		return Inspect{}, err
+	}
+
+	clientSSH, err := ConnectSSH(ip)
+	if err != nil {
+		for i := 0; i < 5; i++ {
+			time.Sleep(30 * time.Second)
+			fmt.Println(err)
+			fmt.Println("Connection refused, do you want to try again? [yes/no]")
+			reader := bufio.NewReader(os.Stdin)
+			a, _ := reader.ReadString('\n')
+			retry := strings.ToLower(strings.TrimSpace(a)) == "yes"
+
+			if retry {
+				logrus.WithFields(logrus.Fields{
+					"ip": ip,
+				}).Info("Retrying to connect")
+
+				clientSSH, err = ConnectSSH(ip)
+				if err != nil {
+					return Inspect{}, errors.New("error trying to connect to server via ssh")
+				}
+			} else {
+				return Inspect{}, errors.New("stop retrying connections by user")
+			}
+		}
+	}
+
+	defer clientSSH.Close()
+
+	inspect, err := inspectCommands(clientSSH, nameServer)
+	if err != nil {
+		return inspect, err
+	}
+
+	return inspect, nil
+}
+
+type Inspect struct {
+	Name string
+	Yaml template.HTML
+	Top  template.HTML
+}
+
+func inspectCommands(clientSSH *goph.Client, nameServer string) (Inspect, error) {
+	yamlFileString, err := clientSSH.Run("cat /root/" + nameServer)
+	if err != nil {
+		return Inspect{}, err
+	}
+
+	top, err := clientSSH.Run("top -b -n 1 > top.txt; head -20 top.txt")
+	if err != nil {
+		return Inspect{}, err
+	}
+
+	yamlFileHTML := template.HTML(yamlFileString)
+	topHTML := template.HTML(top)
+
+	inspect := Inspect{
+		Name: nameServer,
+		Yaml: yamlFileHTML,
+		Top:  topHTML,
+	}
+
+	return inspect, nil
 }

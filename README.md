@@ -43,7 +43,7 @@ This file is composed by two parts:
 | token   | Where the server provider's personal token is stored (**it should never be shared!**). | `string` |         |
 | region   | It is the slug that represents the prefered region where all droplets will be created on. | `string` | lon1 |
 
-> This file **must** exist and contain all the information below to perform the rest of the commands.
+> This file **must** exist and contain all the information above to perform the rest of the commands.
 
 ### `create`
 The **create** command is used to create a droplet and, then, create a gameserver in that droplet. It does not have any arguments, but it has two flags:
