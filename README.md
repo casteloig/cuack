@@ -92,7 +92,7 @@ params:
 As you can see, there are two different configurations, you can select which one you want by passing the `name` of the configuration on the `-s` flag (in this case `minecraft` or `minecraft-big`).
 
 ```bash
-# If we want to create a droplet with the 'minecraft-big' configuration will would do
+# If we want to create a droplet with the 'minecraft-big' configuration we would do
 cuack-ctl -f <path_to_yaml_file> -s minecraft-big
 ```
 
@@ -102,7 +102,7 @@ Every config file must be composed by two parts:
 
 #### First part
 
-This part must be **static**, it means that the variable names and indentation cannot be modified, only the values.
+This part must be **static**, that means that the variable names and indentation cannot be modified, only the values.
 
 | Variables  | Description                                              |
 | ------ | -------------------------------------------------------- |
@@ -138,7 +138,7 @@ It shows the droplet's name and the IP where it is deployed on.
 cuack-ctl list
 ```
 
-### `list`
+### `inspect`
 The **inspect** command is used to see the configuration file (the yaml file) and some other details of the droplet, like CPU and RAM usage.
 
 You must know the name of the droplet, which can be obtained via the `list` command.
