@@ -30,7 +30,7 @@ import (
 var inspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "Get some usefull information of a droplet",
-	Long:  `Get some usefull information of a droplet`,
+	Long:  `Get some usefull information of a droplet, like the yaml file used and the CPU & RAM usage`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) > 0 {
