@@ -138,6 +138,17 @@ It shows the droplet's name and the IP where it is deployed on.
 cuack-ctl list
 ```
 
+### `list`
+The **inspect** command is used to see the configuration file (the yaml file) and some other details of the droplet, like CPU and RAM usage.
+
+You must know the name of the droplet, which can be obtained via the `list` command.
+
+```bash
+cuack-ctl inspect <name_of_droplet>
+```
+
+It prints in command line the URL where is served a tiny website where it's displayed all this information. By detault it's `localhost:8080/`
+
 ### `delete`
 The **delete** command is used to delete a server and the droplet that it is deployed on.
 
