@@ -19,10 +19,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,6 +28,7 @@ import (
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/pterm/pterm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v3"
@@ -51,11 +50,11 @@ var createCmd = &cobra.Command{
 
 		err := do.GetRegionFromFile()
 		if err != nil {
-			log.Fatalln(err)
+			pterm.Error.Println(err)
 		}
 		err = do.GetTokenFromFile()
 		if err != nil {
-			log.Fatalln(err)
+			pterm.Error.Println(err)
 		}
 
 		var yamlFile []byte
@@ -65,12 +64,14 @@ var createCmd = &cobra.Command{
 			if sel != "" {
 				yamlFile, err = yamlToStruct(file, sel)
 				if err != nil {
-					log.Fatalln(err)
+					pterm.Error.Println(err)
+					logrus.Exit(1)
 				}
 			} else {
 				yamlFile, err = yamlToStructFirst(file)
 				if err != nil {
-					log.Fatalln(err)
+					pterm.Error.Println(err)
+					logrus.Exit(1)
 				}
 			}
 		}
@@ -89,21 +90,31 @@ var createCmd = &cobra.Command{
 			// If not reached max number of droplets
 			if do.GetMaxDroplets(client, ctx)-do.GetNumberDroplets(client, ctx) >= 1 {
 				// Create droplet
-				fmt.Println("Trying to create droplet ...")
+				p, _ := pterm.DefaultProgressbar.WithTotal(3).Start()
+				p.Title = "Creating droplet"
+				p.Increment()
 				_, err := do.CreateDropletWithSSH(client, ctx, slugDroplet)
 				if err != nil {
-					log.Fatalln(err)
+					pterm.Error.Println(err)
+					logrus.Exit(1)
 				}
+				pterm.Success.Println("Droplet created successfully")
 
 				// Create server inside the droplet
-				fmt.Println("Creating server ...")
+				p.Title = "Creating server"
+				p.Increment()
 				createTempYaml(yamlFile)
 				ip, err := do.CreateServer(client, ctx)
 				if err != nil {
-					log.Fatalln(err)
+					pterm.Error.Println(err)
+					logrus.Exit(1)
 				}
+				pterm.Success.Println("Server created successfully")
 
-				fmt.Println("Server created in ip " + ip)
+				p.Title = "Creating droplet"
+				p.Increment()
+				pterm.Success.Println("Server created successfully")
+				pterm.Info.Println("Server successfully created!")
 				logrus.WithFields(logrus.Fields{
 					"command":    "create",
 					"final-name": do.Servers.Name,

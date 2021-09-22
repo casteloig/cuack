@@ -21,13 +21,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/pterm/pterm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +41,9 @@ var initCmd = &cobra.Command{
 	This step is needed for creating any server`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		fmt.Println()
+		pterm.DefaultBigText.WithLetters(pterm.NewLettersFromString("CUACK")).Render()
+
 		fmt.Println("Enter the token of Digital Ocean:")
 		reader := bufio.NewReader(os.Stdin)
 		tokenDO, _ := reader.ReadString('\n')
@@ -51,7 +54,8 @@ var initCmd = &cobra.Command{
 
 		regions, err := listRegions(client, ctx)
 		if err != nil {
-			log.Println(err)
+			pterm.Error.Println(err)
+			logrus.Exit(1)
 		}
 
 		regionPref := "lon1"
@@ -64,16 +68,17 @@ var initCmd = &cobra.Command{
 			if regionSlug != "" && err == nil {
 				regionPref = auxRegion
 			} else {
-				log.Println(err)
+				pterm.Error.Println(err)
 			}
 		}
 
 		err = createInitFile(tokenDO, regionPref)
 		if err != nil {
-			log.Println(err)
+			pterm.Error.Println(err)
+			logrus.Exit(1)
 		}
 
-		fmt.Println("Cuack initialized properly")
+		pterm.Info.Println("Config file created properly")
 		logrus.WithFields(logrus.Fields{
 			"command": "init",
 			"region":  regionPref,

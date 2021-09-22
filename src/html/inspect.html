@@ -11,8 +11,26 @@
         <br>
         <pre id="top">{{.Top}}</pre>
     
+        <div id="forLogs">
+            <button onclick="myFunction()" id="but">See logs</button>
 
+            <div id="myDIV" style="display: none;">
+                <pre>{{.Logs}}</pre>
+            </div>
+        </div>
         
+        
+
+        <script>
+            function myFunction() {
+              var x = document.getElementById("myDIV");
+              if (x.style.display === "none") {
+                x.style.display = "block";
+              } else {
+                x.style.display = "none";
+              }
+            }
+            </script>
     
     </body>
 

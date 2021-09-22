@@ -44,7 +44,7 @@ type Server struct {
 // It returns an error if it is not deployed correctly
 func CreateServer(client *godo.Client, ctx context.Context) (string, error) {
 	// Make time for droplet to be deployed correctly
-	time.Sleep(60 * time.Second)
+	time.Sleep(90 * time.Second)
 	// Get the IPv4
 	ip, err := GetIPv4(client, ctx, Servers.Name)
 	if err != nil {
@@ -209,6 +209,7 @@ type Inspect struct {
 	Name string
 	Yaml template.HTML
 	Top  template.HTML
+	Logs template.HTML
 }
 
 func inspectCommands(clientSSH *goph.Client, nameServer string) (Inspect, error) {
@@ -222,13 +223,20 @@ func inspectCommands(clientSSH *goph.Client, nameServer string) (Inspect, error)
 		return Inspect{}, err
 	}
 
+	logs, err := clientSSH.Run("cat /root/logs/logs")
+	if err != nil {
+		return Inspect{}, err
+	}
+
 	yamlFileHTML := template.HTML(yamlFileString)
 	topHTML := template.HTML(top)
+	logsHTML := template.HTML(logs)
 
 	inspect := Inspect{
 		Name: nameServer,
 		Yaml: yamlFileHTML,
 		Top:  topHTML,
+		Logs: logsHTML,
 	}
 
 	return inspect, nil

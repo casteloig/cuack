@@ -17,12 +17,11 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	do "cuack/pkg/digitalocean"
 
 	"github.com/digitalocean/godo"
+	"github.com/pterm/pterm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -39,26 +38,29 @@ var deleteCmd = &cobra.Command{
 
 			err := do.GetTokenFromFile()
 			if err != nil {
-				log.Println(err)
+				pterm.Error.Println(err)
+				logrus.Exit(1)
 			}
 
 			client := godo.NewFromToken(do.Token)
 			ctx := context.TODO()
 
-			log.Println("Deleting " + serverName + "...")
+			spinnerDeleting, _ := pterm.DefaultSpinner.Start("Deleting server " + serverName)
 			err = do.DeleteDropletByName(client, ctx, serverName)
 			if err != nil {
-				log.Println(err)
+				pterm.Error.Println(err)
+				logrus.Exit(1)
 			}
+			spinnerDeleting.Success()
 
-			fmt.Println("Droplet" + serverName + "deleted properly")
+			pterm.Info.Println("Droplet" + serverName + " properly deleted")
 			logrus.WithFields(logrus.Fields{
 				"command": "delete",
 				"name":    serverName,
 			}).Info("Sucesfully deleted droplet")
 
 		} else {
-			fmt.Println("Not enough arguments")
+			pterm.NewRGB(255, 0, 0).Println("Not enough arguments")
 		}
 
 	},

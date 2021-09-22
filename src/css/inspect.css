@@ -9,10 +9,10 @@ h1 {
     background-color: rgb(245, 244, 243);
     font-size: 100%;
     width: 320px;
-    padding: 2%;
-    padding-right: 3%;
+    padding: 1%;
+    padding-right: 2%;
     border: 5px solid gray;
-    margin-top: 35px;
+    margin-top: 25px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -23,9 +23,34 @@ h1 {
     padding: 1%;
     padding-right: 5%;
     border: 2px solid gray;
-    margin-top: 30px;
+    margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
+}
+
+
+#myDiv {
+    margin: auto;
+    width: 93%;
+    padding: 10px;
+}
+
+#but {
+    margin:0 auto;
+    margin-top: 30px;
+    display:block;
+
+    background-color: #75c0fd; /* Green */
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding-right: 8px;
+    padding-left: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 body {
