@@ -1,22 +1,12 @@
-name: Release cuack
+name: Upload binary to new release
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
-    release_demo_cuack:
+    upload_binary:
       runs-on: ubuntu-latest
-      # strategy:
-      #   matrix:
-      #     goos: [linux, windows]
-      #     goarch: ["386", "amd64"]
-      #     goos: [linux]
-      #     goarch: [amd64]
-      if: github.event_name == 'push'
       steps:
         - uses: actions/checkout@v2
           with:
@@ -28,30 +18,12 @@ jobs:
             go-version: '1.17' # The Go version to download (if necessary) and use.
         - run: go build -mod vendor -o ./bin/cuack-ctl ./cmd/cuack-ctl/
 
-        # - name: Get tag
-        #   id: tag
-        #   uses: dawidd6/action-get-tag@v1
-
-        - uses: olegtarasov/get-tag@v2.1
-          id: tagName
-
-        - name: Create Release
-          uses: actions/create-release@v1
-          id: create_release
-          with:
-            tag_name: ${{ steps.tagName.outputs.tag }}
-            release_name: ${{ steps.tagName.outputs.tag }}
-            draft: false
-            prerelease: false
-          env:
-            GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GITHUB }}
-
         - name: upload linux artifact
           uses: actions/upload-release-asset@v1
           env:
             GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GITHUB }}
           with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            upload_url: ${{ github.event.release.upload_url }}
             asset_path: ./bin/cuack-ctl
             asset_name: cuack-ctl
             asset_content_type: application/octet-stream
