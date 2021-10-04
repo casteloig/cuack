@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+env:
+    DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+    DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
+
 jobs:
     upload_binary:
       runs-on: ubuntu-latest
@@ -28,7 +32,7 @@ jobs:
             asset_name: cuack-ctl
             asset_content_type: application/octet-stream
 
-    push_minecraft_latest:
+    push_cuack_image:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v2
