@@ -27,3 +27,21 @@ jobs:
             asset_path: ./bin/cuack-ctl
             asset_name: cuack-ctl
             asset_content_type: application/octet-stream
+
+
+    push_minecraft_latest:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
+        - name: Docker login
+          run: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        - name: Build and push Docker Images
+          id: docker_build
+          uses: docker/build-push-action@v2.5.0
+          with:
+            push: true
+            context: .
+            tags: casteloig/cuack:latest
