@@ -28,7 +28,6 @@ jobs:
             asset_name: cuack-ctl
             asset_content_type: application/octet-stream
 
-
     push_minecraft_latest:
       runs-on: ubuntu-latest
       steps:
