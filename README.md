@@ -3,7 +3,10 @@
 </h1>
 <p align="center">Deploy automatically your gameservers on cloud providers (only DigitalOcean is supported so far) in a easy and fast way</p>
 
-<p align="center">[![Docker Downloads](https://img.shields.io/docker/pulls/casteloig/cuack?style=flat-square)](https://hub.docker.com/repository/docker/casteloig/cuack)</p>
+<p align="center">
+<a href="https://hub.docker.com/repository/docker/casteloig/cuack" alt="DockerHub">
+        <img src="https://img.shields.io/docker/pulls/casteloig/cuack" /></a>
+</p>
 
 ## Quick start
 1. Create the **initialization file** and introduce the Personal Access Token (DigitalOcean's can be found [here](https://docs.digitalocean.com/reference/api/create-personal-access-token/)) and the prefered region slug (these are displayed on screen.)
