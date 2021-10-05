@@ -103,10 +103,10 @@ func init() {
 
 func createInitFile(key string, region string) error {
 	home, _ := os.UserHomeDir()
-	dir := home + "/.config/"
+	dir := home + "/.config"
 	fileDir := dir + "cuack.config"
 
-	err := os.MkdirAll(dir, os.ModeDir)
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		err = fmt.Errorf("%w; failed creating config file", err)
 		logrus.WithFields(logrus.Fields{
