@@ -154,6 +154,8 @@ cuack-ctl inspect <name_of_droplet>
 
 It prints in command line the URL where is served a tiny website where it's displayed all this information. By detault it's `localhost:8080/`
 
+![ie inspect](https://github.com/casteloig/cuack/blob/main/inspect.png?raw=true)
+
 ### `delete`
 The **delete** command is used to delete a server and the droplet that it is deployed on.
 

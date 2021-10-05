@@ -109,11 +109,10 @@ var createCmd = &cobra.Command{
 					pterm.Error.Println(err)
 					logrus.Exit(1)
 				}
-				pterm.Success.Println("Server created successfully")
 
 				p.Title = "Creating droplet"
 				p.Increment()
-				pterm.Success.Println("Server created successfully")
+				pterm.Success.Println("Server created successfully on ", ip)
 				pterm.Info.Println("Server successfully created!")
 				logrus.WithFields(logrus.Fields{
 					"command":    "create",
