@@ -8,6 +8,10 @@
         <img src="https://img.shields.io/docker/pulls/casteloig/cuack" /></a>
 </p>
 
+<div align="center">
+  <img src="assets/images/cuack.png" width="260" alt="Cuack Logo" />
+</div>
+
 ## Quick start
 1. Create the **initialization file** and introduce the Personal Access Token (DigitalOcean's can be found [here](https://docs.digitalocean.com/reference/api/create-personal-access-token/)) and the prefered region slug (these are displayed on screen.)
 
